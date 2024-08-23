@@ -42,6 +42,83 @@ class Board
         return new self($value, $currentTurn);
     }
 
+    public function getWinner(): Piece
+    {
+        $winner = $this->getHorizontalWinner();
+
+        if ($winner->isEmpty()) {
+            $winner = $this->getVerticalWinner();
+
+            if ($winner->isEmpty()) {
+                $winner = $this->getDiagonalWinner();
+            }
+        }
+
+        return $winner;
+    }
+
+    private function getHorizontalWinner(): Piece
+    {
+        foreach ($this->toArray() as $y => $row) {
+            $winner = $this->getWinnerFromRow($row);
+
+            if (!$winner->isEmpty()) {
+                break;
+            }
+        }
+
+        return $winner;
+    }
+
+    private function getVerticalWinner(): Piece
+    {
+        $boardArr = $this->toArray();
+
+        for ($x=0; $x <= 2; $x++) {
+            $row = [
+                $boardArr[0][$x],
+                $boardArr[1][$x],
+                $boardArr[2][$x],
+            ];
+            $winner = $this->getWinnerFromRow($row);
+
+            if (!$winner->isEmpty()) {
+                break;
+            }
+        }
+
+        return $winner;
+    }
+
+    private function getDiagonalWinner(): Piece
+    {
+        $boardArr = $this->toArray();
+
+        $mainDiagonal = [$boardArr[0][0], $boardArr[1][1], $boardArr[2][2]];
+        $winner = $this->getWinnerFromRow($mainDiagonal);
+
+        if ($winner->isEmpty()) {
+            $antiDiagonal = [$boardArr[0][2], $boardArr[1][1], $boardArr[2][0]];
+            $winner = $this->getWinnerFromRow($antiDiagonal);
+        }
+
+        return $winner;
+    }
+
+    private function getWinnerFromRow(array $row): Piece
+    {
+        $winner = Piece::EMPTY();
+        $rowStr = implode('', $row);
+
+        if ($rowStr === 'xxx') {
+            $winner = Piece::X();
+        } elseif ($rowStr === 'ooo') {
+            $winner = Piece::O();
+        }
+
+        return $winner;
+    }
+
     public function toArray(): array
     {
         return array_map(

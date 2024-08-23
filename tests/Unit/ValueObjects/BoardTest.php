@@ -51,4 +51,48 @@ class BoardTest extends TestCase
         $this->assertEquals(Piece::O()->value, $board->currentTurn->value);
 
     }
+
+    public function test_it_can_get_the_winner_horizontal(): void
+    {
+        $board = Board::create([
+            ['x', 'x', 'x'],
+            ['x', 'o', ''],
+            ['', '', ''],
+        ]);
+
+        $this->assertEquals(Piece::X(), $board->getWinner());
+    }
+
+    public function test_it_can_get_the_winner_vertical(): void
+    {
+        $board = Board::create([
+            ['x', 'o', 'x'],
+            ['o', 'o', ''],
+            ['', 'o', ''],
+        ]);
+
+        $this->assertEquals(Piece::O(), $board->getWinner());
+    }
+
+    public function test_it_can_get_the_winner_diagonal(): void
+    {
+        $board = Board::create([
+            ['x', 'o', 'x'],
+            ['o', 'x', ''],
+            ['', 'o', 'x'],
+        ]);
+
+        $this->assertEquals(Piece::X(), $board->getWinner());
+    }
+
+    public function test_it_cannot_get_the_winner(): void
+    {
+        $board = Board::create([
+            ['x', 'o', 'x'],
+            ['o', 'x', ''],
+            ['', 'o', ''],
+        ]);
+
+        $this->assertEquals(Piece::EMPTY(), $board->getWinner());
+    }
 }
