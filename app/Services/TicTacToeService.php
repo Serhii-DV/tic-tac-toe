@@ -9,18 +9,18 @@ use Illuminate\Support\Facades\File;
 
 class TicTacToeService
 {
-    private const BOARD_FILE = 'app/board.json';
+    private const DATA_FILE = 'app/tic-tac-toe.json';
 
     private Board $board;
 
     public function __construct()
     {
-        $this->board = $this->getBoard();
+        $this->loadState();
     }
 
     public function __destruct()
     {
-        $this->saveBoard($this->board);
+        $this->saveState();
     }
 
     public function move(string $piece, int $x, int $y): void
@@ -35,30 +35,30 @@ class TicTacToeService
         $state = [
             'board' => $this->board->toArray(),
             'score' => [],
-            'currentTurn' => '',
+            'currentTurn' => $this->board->currentTurn->value,
             'victory' => '',
         ];
 
         return $state;
     }
 
-    private function getBoardFilePath(): string
+    private function getDataFilePath(): string
     {
-        return storage_path(self::BOARD_FILE);
+        return storage_path(self::DATA_FILE);
     }
 
-    private function getBoard(): Board
+    private function loadState(): void
     {
-        $filePath = $this->getBoardFilePath();
-        $boardData = File::exists($filePath)
+        $filePath = $this->getDataFilePath();
+        $stateData = File::exists($filePath)
             ? json_decode(File::get($filePath), JSON_THROW_ON_ERROR)
             : [];
 
-        return Board::create($boardData);
+        $this->board = Board::create($stateData['board'] ?? []);
     }
 
-    private function saveBoard(Board $board): void
+    private function saveState(): void
     {
-        File::put($this->getBoardFilePath(), json_encode($board->toArray(), JSON_PRETTY_PRINT));
+        File::put($this->getDataFilePath(), json_encode($this->getState(), JSON_PRETTY_PRINT));
     }
 }
