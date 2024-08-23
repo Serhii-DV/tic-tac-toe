@@ -23,11 +23,20 @@ class TicTacToeService
         $this->saveState();
     }
 
-    public function move(string $piece, int $x, int $y): void
+    public function move(string $piece, int $x, int $y): self
     {
         $piece = new Piece($piece);
         $coordinate = new Position($x, $y);
         $this->board = $this->board->setPiece($piece, $coordinate);
+
+        return $this;
+    }
+
+    public function clearBoardAndScore(): self
+    {
+        $this->board = Board::create();
+
+        return $this;
     }
 
     public function getState(): array

@@ -45,8 +45,14 @@ class TicTacToe extends Controller
         return __METHOD__;
     }
 
-    public function delete()
+    public function delete(): JsonResponse
     {
-        return __METHOD__;
+        $state = $this->ticTacToeService
+            ->clearBoardAndScore()
+            ->getState();
+
+        return response()->json([
+            'currentTurn' => $state['currentTurn']
+        ]);
     }
 }

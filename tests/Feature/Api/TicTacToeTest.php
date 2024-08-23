@@ -16,7 +16,7 @@ class TicTacToeTest extends TestCase
             'currentTurn',
             'victory'
         ]);
-        $response->assertStatus(200);
+        $response->assertOk();
     }
 
     public function test_move_x(): void
@@ -24,7 +24,7 @@ class TicTacToeTest extends TestCase
         $response = $this->postJson('/api/x', ['x'=>0, 'y'=>0]);
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonStructure([
                 'board',
                 'score',
@@ -37,7 +37,7 @@ class TicTacToeTest extends TestCase
     {
         $response = $this->postJson('/api/o', ['x'=>0, 'y'=>1]);
 
-        $response->assertStatus(200);
+        $response->assertOk();
     }
 
     public function test_move_x_invalid(): void
@@ -60,6 +60,19 @@ class TicTacToeTest extends TestCase
         $response = $this->postJson('/api/o', ['x'=>-1, 'y'=>1]);
 
         $response->assertNotAcceptable();
+    }
+
+    public function test_it_can_delete(): void
+    {
+        $response = $this->deleteJson('api/');
+        $response
+            ->assertOk()
+            ->assertJsonStructure([
+                'currentTurn',
+            ])
+            ->assertJson([
+                'currentTurn' => 'x'
+            ]);
     }
 
 }
