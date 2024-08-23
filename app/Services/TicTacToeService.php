@@ -5,11 +5,12 @@ namespace App\Services;
 use App\ValueObjects\Board;
 use App\ValueObjects\Position;
 use App\ValueObjects\Piece;
-use Illuminate\Support\Facades\Session;
-use InvalidArgumentException;
+use Illuminate\Support\Facades\File;
 
 class TicTacToeService
 {
+    private const BOARD_FILE = 'app/board.json';
+
     private Board $board;
 
     public function __construct()
@@ -41,13 +42,23 @@ class TicTacToeService
         return $state;
     }
 
+    private function getBoardFilePath(): string
+    {
+        return storage_path(self::BOARD_FILE);
+    }
+
     private function getBoard(): Board
     {
-        return Board::create(Session::get('board', []));
+        $filePath = $this->getBoardFilePath();
+        $boardData = File::exists($filePath)
+            ? json_decode(File::get($filePath), JSON_THROW_ON_ERROR)
+            : [];
+
+        return Board::create($boardData);
     }
 
     private function saveBoard(Board $board): void
     {
-        Session::put('board', $board->toArray());
+        File::put($this->getBoardFilePath(), json_encode($board->toArray(), JSON_PRETTY_PRINT));
     }
 }
