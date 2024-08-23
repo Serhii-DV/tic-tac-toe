@@ -17,6 +17,7 @@ class BoardTest extends TestCase
             [Piece::EMPTY(), Piece::EMPTY(), Piece::EMPTY()],
             [Piece::EMPTY(), Piece::EMPTY(), Piece::EMPTY()],
         ], $board->getPositions());
+        $this->assertEquals(Piece::X()->value, $board->currentTurn->value);
     }
 
     public function test_it_can_create_non_empty_board(): void
@@ -32,6 +33,7 @@ class BoardTest extends TestCase
             [Piece::X(), Piece::X(), Piece::EMPTY()],
             [Piece::EMPTY(), Piece::EMPTY(), Piece::EMPTY()],
         ], $board->getPositions());
+        $this->assertEquals(Piece::X()->value, $board->currentTurn->value);
     }
 
     public function test_it_can_set_position(): void
@@ -46,6 +48,7 @@ class BoardTest extends TestCase
             [Piece::EMPTY(), Piece::EMPTY(), Piece::EMPTY()],
             [Piece::EMPTY(), Piece::EMPTY(), Piece::EMPTY()],
         ], $board->getPositions());
+        $this->assertEquals(Piece::O()->value, $board->currentTurn->value);
 
     }
 }
