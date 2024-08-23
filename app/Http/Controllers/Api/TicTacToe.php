@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\GameStateResource;
 use App\Services\TicTacToeService;
+use App\ValueObjects\Exceptions\InvalidBoardPosition;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 class TicTacToe extends Controller
 {
@@ -14,14 +17,27 @@ class TicTacToe extends Controller
 
     }
 
-    public function index(): string
+    public function index(): JsonResponse
     {
-        return json_encode($this->ticTacToeService->getState());
+        return response()->json($this->ticTacToeService->getState());
     }
 
-    public function move()
+    public function move(Request $request, string $piece): JsonResponse
     {
-        return __METHOD__;
+        $validatedData = $request->validate([
+            'x' => 'required|numeric',
+            'y' => 'required|numeric',
+        ]);
+
+        try {
+            $this->ticTacToeService->move($piece, $validatedData['x'], $validatedData['y']);
+        } catch (InvalidArgumentException $th) {
+            abort(406, 'Not Acceptable');
+        } catch (InvalidBoardPosition $th) {
+            abort(409, 'Conflict');
+        }
+
+        return response()->json($this->ticTacToeService->getState());
     }
 
     public function restart()
