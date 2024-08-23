@@ -12,6 +12,10 @@ class TicTacToeService
     private const DATA_FILE = 'app/tic-tac-toe.json';
 
     private Board $board;
+    private $score = [
+        Piece::X => 0,
+        Piece::O => 0,
+    ];
 
     public function __construct()
     {
@@ -32,42 +36,76 @@ class TicTacToeService
         return $this;
     }
 
-    public function clearBoardAndScore(): self
+    public function clearBoard(): self
     {
         $this->board = Board::create();
 
         return $this;
     }
 
+    public function clearScore(): self
+    {
+        $this->score = [
+            Piece::X => 0,
+            Piece::O => 0,
+        ];
+
+        return $this;
+    }
+
+    public function updateScore(): self
+    {
+        $winner = $this->board->getWinner();
+
+        if (!$winner->isEmpty()) {
+            $this->score[$winner->value] += 1;
+        }
+
+        return $this;
+    }
+
     public function getState(): array
     {
+        $winner = $this->board->getWinner();
+
         $state = [
             'board' => $this->board->toArray(),
-            'score' => [],
+            'score' => $this->score,
             'currentTurn' => $this->board->currentTurn->value,
-            'victory' => '',
+            'victory' => $winner->value,
+            'finished' => ! $winner->isEmpty()
         ];
 
         return $state;
     }
 
-    private function getDataFilePath(): string
+    public static function getDataFilePath(): string
     {
         return storage_path(self::DATA_FILE);
     }
 
-    private function loadState(): void
+    private function loadState(): self
     {
         $filePath = $this->getDataFilePath();
         $stateData = File::exists($filePath)
             ? json_decode(File::get($filePath), JSON_THROW_ON_ERROR)
             : [];
 
-        $this->board = Board::create($stateData['board'] ?? []);
+        $this->board = Board::create(
+            $stateData['board'] ?? [],
+            $stateData['currentTurn'] ?? Piece::X
+        );
+
+        $this->clearScore();
+        $this->score = $stateData['score'] ?? $this->score;
+
+        return $this;
     }
 
-    private function saveState(): void
+    private function saveState(): self
     {
         File::put($this->getDataFilePath(), json_encode($this->getState(), JSON_PRETTY_PRINT));
+
+        return $this;
     }
 }
