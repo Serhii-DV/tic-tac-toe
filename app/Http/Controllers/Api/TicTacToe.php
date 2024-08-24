@@ -19,7 +19,9 @@ class TicTacToe extends Controller
 
     public function index(): JsonResponse
     {
-        return response()->json($this->ticTacToeService->getState());
+        $state = $this->ticTacToeService->getGameState();
+
+        return response()->json($state);
     }
 
     public function move(Request $request, string $piece): JsonResponse
@@ -30,34 +32,30 @@ class TicTacToe extends Controller
         ]);
 
         try {
-            $this->ticTacToeService->move($piece, $validatedData['x'], $validatedData['y']);
+            $state = $this->ticTacToeService->move($piece, $validatedData['x'], $validatedData['y']);
         } catch (InvalidArgumentException $th) {
             abort(406, 'Not Acceptable');
         } catch (InvalidBoardPosition $th) {
+            dd($th->getMessage());
             abort(409, 'Conflict');
         }
 
-        return response()->json($this->ticTacToeService->getState());
+        return response()->json($state);
     }
 
     public function restart()
     {
-        $state = $this->ticTacToeService
-            ->updateScore()
-            ->clearBoard()
-            ->getState();
+        $state = $this->ticTacToeService->restartGame();
 
         return response()->json($state);
     }
 
     public function delete(): JsonResponse
     {
-        $state = $this->ticTacToeService
-            ->clearBoard()
-            ->getState();
+        $state = $this->ticTacToeService->newGame();
 
         return response()->json([
-            'currentTurn' => $state['currentTurn']
+            'currentTurn' => $state->getCurrentTurn()
         ]);
     }
 }

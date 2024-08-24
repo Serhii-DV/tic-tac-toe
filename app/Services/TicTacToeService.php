@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\ValueObjects\Board;
+use App\ValueObjects\GameState;
 use App\ValueObjects\Position;
 use App\ValueObjects\Piece;
 use Illuminate\Support\Facades\File;
@@ -27,13 +28,31 @@ class TicTacToeService
         $this->saveState();
     }
 
-    public function move(string $piece, int $x, int $y): self
+    public function newGame(): GameState
+    {
+        return $this
+            ->clearBoard()
+            ->clearScore()
+            ->getGameState();
+    }
+
+    public function restartGame(): GameState
+    {
+        return $this
+            ->updateScore()
+            ->clearBoard()
+            ->getGameState();
+    }
+
+    public function move(string $piece, int $x, int $y): GameState
     {
         $piece = new Piece($piece);
         $coordinate = new Position($x, $y);
         $this->board = $this->board->setPiece($piece, $coordinate);
 
-        return $this;
+        return $this
+            ->updateScore()
+            ->getGameState();
     }
 
     public function clearBoard(): self
@@ -64,19 +83,12 @@ class TicTacToeService
         return $this;
     }
 
-    public function getState(): array
+    public function getGameState(): GameState
     {
-        $winner = $this->board->getWinner();
-
-        $state = [
-            'board' => $this->board->toArray(),
-            'score' => $this->score,
-            'currentTurn' => $this->board->currentTurn->value,
-            'victory' => $winner->value,
-            'finished' => ! $winner->isEmpty()
-        ];
-
-        return $state;
+        return new GameState(
+            $this->board,
+            $this->score
+        );
     }
 
     public static function getDataFilePath(): string
@@ -104,7 +116,7 @@ class TicTacToeService
 
     private function saveState(): self
     {
-        File::put($this->getDataFilePath(), json_encode($this->getState(), JSON_PRETTY_PRINT));
+        File::put($this->getDataFilePath(), json_encode($this->getGameState(), JSON_PRETTY_PRINT));
 
         return $this;
     }
