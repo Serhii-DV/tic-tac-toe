@@ -17,6 +17,7 @@ class TicTacToeService
         Piece::X => 0,
         Piece::O => 0,
     ];
+    private $finished = false;
 
     public function __construct()
     {
@@ -31,16 +32,22 @@ class TicTacToeService
     public function newGame(): GameState
     {
         return $this
+            ->loadState()
             ->clearBoard()
             ->clearScore()
+            ->unFinishGame()
+            ->saveState()
             ->getGameState();
     }
 
     public function restartGame(): GameState
     {
         return $this
+            ->loadState()
+            ->finishGame()
             ->updateScore()
             ->clearBoard()
+            ->saveState()
             ->getGameState();
     }
 
@@ -48,10 +55,13 @@ class TicTacToeService
     {
         $piece = new Piece($piece);
         $coordinate = new Position($x, $y);
+
+        $this->loadState();
         $this->board = $this->board->setPiece($piece, $coordinate);
 
         return $this
             ->updateScore()
+            ->saveState()
             ->getGameState();
     }
 
@@ -74,6 +84,11 @@ class TicTacToeService
 
     public function updateScore(): self
     {
+        if ($this->finished) {
+            // Do not update the score
+            return $this;
+        }
+
         $winner = $this->board->getWinner();
 
         if (!$winner->isEmpty()) {
@@ -85,15 +100,30 @@ class TicTacToeService
 
     public function getGameState(): GameState
     {
-        return new GameState(
+        $state = new GameState(
             $this->board,
-            $this->score
+            $this->score,
+            $this->finished
         );
+
+        return $state;
     }
 
     public static function getDataFilePath(): string
     {
         return storage_path(self::DATA_FILE);
+    }
+
+    private function finishGame(): self
+    {
+        $this->finished = true;
+        return $this;
+    }
+
+    private function unFinishGame(): self
+    {
+        $this->finished = false;
+        return $this;
     }
 
     private function loadState(): self

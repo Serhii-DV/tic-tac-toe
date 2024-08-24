@@ -86,6 +86,20 @@ class TicTacToeTest extends TestCase
             ]);
     }
 
+    public function test_it_can_restart(): void
+    {
+        $this->deleteDataFile();
+        $response = $this->postJson('api/restart');
+        $response
+            ->assertOk()
+            ->assertJsonStructure([
+                'board',
+                'score',
+                'currentTurn',
+                'victory'
+            ]);
+    }
+
     public function test_it_can_get_the_winner(): void
     {
         // Reset the game
@@ -103,6 +117,51 @@ class TicTacToeTest extends TestCase
             ->assertJson([
                 'score' => [
                     'x' => 1,
+                    'o' => 0,
+                ],
+                'victory' => 'x',
+            ]);
+    }
+
+    public function test_it_can_get_the_winner_in_two_games(): void
+    {
+        // Reset the game
+        $this->deleteDataFile();
+
+        // Add some moves
+        $this->postJson('/api/x', ['x'=>0, 'y'=>0]);
+        $this->postJson('/api/o', ['x'=>1, 'y'=>0]);
+        $this->postJson('/api/x', ['x'=>0, 'y'=>1]);
+        $this->postJson('/api/o', ['x'=>1, 'y'=>1]);
+        $response = $this->postJson('/api/x', ['x'=>0, 'y'=>2]);
+
+        // Winner - x. Score: 1:0
+        $response
+            ->assertOk()
+            ->assertJson([
+                'score' => [
+                    'x' => 1,
+                    'o' => 0,
+                ],
+                'victory' => 'x',
+            ]);
+
+        $this->postJson('/api/restart');
+
+        // Add some moves
+        $this->postJson('/api/x', ['x'=>0, 'y'=>0]);
+        $this->postJson('/api/o', ['x'=>1, 'y'=>0]);
+        $this->postJson('/api/x', ['x'=>0, 'y'=>1]);
+        $this->postJson('/api/o', ['x'=>1, 'y'=>1]);
+        $response = $this->postJson('/api/x', ['x'=>0, 'y'=>2]);
+
+        // Winner - x. Score: 2:0
+
+        $response
+            ->assertOk()
+            ->assertJson([
+                'score' => [
+                    'x' => 2,
                     'o' => 0,
                 ],
                 'victory' => 'x',

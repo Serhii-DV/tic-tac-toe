@@ -36,7 +36,6 @@ class TicTacToe extends Controller
         } catch (InvalidArgumentException $th) {
             abort(406, 'Not Acceptable');
         } catch (InvalidBoardPosition $th) {
-            dd($th->getMessage());
             abort(409, 'Conflict');
         }
 

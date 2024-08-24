@@ -8,7 +8,8 @@ class GameState implements JsonSerializable
 {
     public function __construct(
         public readonly Board $board,
-        public readonly array $score
+        public readonly array $score,
+        public readonly bool $finished = false
     )
     {
     }
@@ -27,7 +28,7 @@ class GameState implements JsonSerializable
             'score' => $this->score,
             'currentTurn' => $this->getCurrentTurn(),
             'victory' => $winner->value,
-            'finished' => ! $winner->isEmpty()
+            'finished' => $this->finished
         ];
     }
 }
