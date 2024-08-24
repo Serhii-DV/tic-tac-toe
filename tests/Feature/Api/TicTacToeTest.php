@@ -58,10 +58,11 @@ class TicTacToeTest extends TestCase
 
     public function test_move_x_conflict(): void
     {
-        //TODO
-        // $response = $this->postJson('/api/x', ['x'=>0, 'y'=>3]);
+        $this->getJson('/');
+        $this->postJson('/api/x', ['x'=>0, 'y'=>0]);
+        $response = $this->postJson('/api/o', ['x'=>0, 'y'=>0]);
 
-        // $response->assertNotAcceptable();
+        $response->assertConflict();
     }
 
     public function test_move_o_invalid(): void
